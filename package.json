@@ -1,0 +1,27 @@
+{
+  "name": "jobs-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aditya-786/Jobs-Backend.git"
+  },
+  "author": "aditya aggarwal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aditya-786/Jobs-Backend/issues"
+  },
+  "homepage": "https://github.com/aditya-786/Jobs-Backend#readme",
+  "dependencies": {
+    "axios": "^1.3.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.2",
+    "pg": "^8.9.0",
+    "redis": "^4.6.4"
+  }
+}
