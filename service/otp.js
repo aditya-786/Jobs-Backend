@@ -7,9 +7,8 @@ async function generateOtp() {
 
 
 async function sendOtpToPhoneNumber(phoneNumber){
- const otp = await generateOtp();
- await smsLib.sendSms(phoneNumber,otp);
- return otp;
+ const response = await smsLib.sendSms(phoneNumber);
+ return response && response.data ? response.data.OTP : null;
 }
 
 module.exports = {

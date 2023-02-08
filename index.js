@@ -70,15 +70,15 @@ app.post("/register/user", async (req, res) => {
         const { firstname, lastname, phonenumber, email, dob, gender, age, mothername, fathername, city, presentaddress, pancard, adharcard, drivinglicense, qualification,
             experience, currentemployeer, currentjobrole, salarypermonth, languagecomfortable, resumelink } = req.body;
 
-        
+
         // check user already registered.
         const isUserPresent = await userLib.getUserByPhonNumber(phonenumber);
         if (isUserPresent) {
             throw new Error('User already exists. Please login into our website');
         }
         // check if city is present or not.
-        let cityid=null;
-        if(city != null){
+        let cityid = null;
+        if (city != null) {
             cityid = await cityLib.getCityIdByName(city);
             if (!cityid) {
                 throw new Error('city not found');
@@ -104,7 +104,7 @@ app.post("/register/user", async (req, res) => {
 app.post("/send/opt", async (req, res) => {
     try {
         const { phonenumber, userid } = req.body;
-        console.log(phonenumber,userid);
+        console.log(phonenumber, userid);
         const otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
         const redis = await redisLib.redisClient();
         redis.set(enums.LATEST_SMS_OTP + '_' + userid, otp);
@@ -186,7 +186,7 @@ app.get("/get/notAppliedJobs", async (req, res) => {
     try {
         const userId = req.param('userid');
         const userSession = await userSessionsLib.getLatestUserSession(userId);
-        console.log("Session-> ",userSession)
+        console.log("Session-> ", userSession)
         if (userSession !== enums.USER_SESSIONS.ACTIVE) {
             throw new Error("please login to access new jobs");
         }
@@ -211,7 +211,7 @@ app.post("/apply/job", async (req, res) => {
     try {
         const { userid, jobid } = req.body;// user want to apply for this jobId.
         // create entry into document_verification table with status pending.
-        console.log("Entering in apply job",userid,jobid);
+        console.log("Entering in apply job", userid, jobid);
         const documentVerification = await jobLib.insertIntoDocumentVerification(userid, jobid, enums.JOB_STATUSES.PENDING);
         const jobStatus = {
             level: enums.JOB_STATUS_LEVELS.DOCUMENT_VERIFICATION,
@@ -264,15 +264,15 @@ app.get("/get/jobStatus", async (req, res) => {
 
 app.post("/update/scheduledInterviewStatus", async (req, res) => {
     try {
-        const {userid,jobid,status,message} = req.body;
-        await jobLib.updateSchduledInterviewsStatus(status, userid,jobid);
-        if(status === enums.JOB_STATUSES.FAILED){
-            await jobLib.insertIntoUserJobLevelFailures(userid,jobid, enums.JOB_STATUS_LEVELS.SCHEDULED_INTERVIEWS, message);
-            await jobLib.updateJobStatusInRedis(userid,jobid, enums.JOB_STATUS_LEVELS.SCHEDULED_INTERVIEWS, enums.JOB_STATUSES.FAILED, message);
+        const { userid, jobid, status, message } = req.body;
+        await jobLib.updateSchduledInterviewsStatus(status, userid, jobid);
+        if (status === enums.JOB_STATUSES.FAILED) {
+            await jobLib.insertIntoUserJobLevelFailures(userid, jobid, enums.JOB_STATUS_LEVELS.SCHEDULED_INTERVIEWS, message);
+            await jobLib.updateJobStatusInRedis(userid, jobid, enums.JOB_STATUS_LEVELS.SCHEDULED_INTERVIEWS, enums.JOB_STATUSES.FAILED, message);
         }
-        else{
+        else {
             // candidate is hired by the company.
-            await jobLib.updateJobStatusInRedis(userid,jobid, enums.JOB_STATUS_LEVELS.HIRED, enums.JOB_STATUSES.PASSED, '');
+            await jobLib.updateJobStatusInRedis(userid, jobid, enums.JOB_STATUS_LEVELS.HIRED, enums.JOB_STATUSES.PASSED, '');
         }
 
         return res.json({ message: 'updated status for candidate', status: 'success', payload: null });
@@ -291,7 +291,7 @@ app.patch("/profile/update", async (req, res) => {
 
 
         const { firstname, lastname, phonenumber, email, dob, gender, age, mothername, fathername, city, presentaddress, pancard, adharcard, drivinglicense, qualification,
-            experience, currentemployeer, currentjobrole, salarypermonth, languagecomfortable, resumelink,userid } = req.body;
+            experience, currentemployeer, currentjobrole, salarypermonth, languagecomfortable, resumelink, userid } = req.body;
 
         console.log(req.body);
         const userSession = await userSessionsLib.getLatestUserSession(userid);
@@ -320,7 +320,7 @@ app.patch("/profile/update", async (req, res) => {
                 cityid, presentaddress, pancard,
                 adharcard, drivinglicense, qualification,
                 experience, currentemployeer, currentjobrole,
-                salarypermonth, languagecomfortable, resumelink,userid]
+                salarypermonth, languagecomfortable, resumelink, userid]
         );
 
         return res.json({ message: 'Profile updated successfully', status: 'success', payload: null });
@@ -333,8 +333,8 @@ app.patch("/profile/update", async (req, res) => {
 
 app.post("/profile/logout", async (req, res) => {
     try {
-        const {userid } = req.body;
-        console.log("Logout: ",userid);
+        const { userid } = req.body;
+        console.log("Logout: ", userid);
         // just make a entry into user sessions table with status closed.
         await userSessionsLib.insertIntoUserSessions(userid, enums.USER_SESSIONS.CLOSED);
         return res.json({ message: 'Profile logout successfully', status: 'success', payload: null });
@@ -364,9 +364,9 @@ app.get("/profile/userDetails", async (req, res) => {
 app.post("/refer", async (req, res) => {
     try {
 
-        const {referrerUserId, referralPhoneNumber} = req.body;
-        console.log(referrerUserId,referralPhoneNumber)
-        await referralLib.insertIntoReferrals(referrerUserId,referralPhoneNumber,enums.REFERRAL_STATUS.INITIATED)
+        const { referrerUserId, referralPhoneNumber } = req.body;
+        console.log(referrerUserId, referralPhoneNumber)
+        await referralLib.insertIntoReferrals(referrerUserId, referralPhoneNumber, enums.REFERRAL_STATUS.INITIATED)
         return res.json({ message: 'referred', status: 'success', payload: null });
     } catch (err) {
         console.log(err.message);
@@ -378,22 +378,22 @@ app.get("/countReferrals", async (req, res) => {
     try {
         const userid = req.param('userid');
         const referrals = await referralLib.getNumberOfReferralsByUserId(userid);
-        let initiated=[],pending=[],progress=[],referred=[];
-        for(let i=0;i<referrals.length;i++){
-            if(referrals[i].status === enums.REFERRAL_STATUS.INITIATED){
+        let initiated = [], pending = [], progress = [], referred = [];
+        for (let i = 0; i < referrals.length; i++) {
+            if (referrals[i].status === enums.REFERRAL_STATUS.INITIATED) {
                 initiated.push(referrals[i]);
             }
-            if(referrals[i].status === enums.REFERRAL_STATUS.PENDING){
+            if (referrals[i].status === enums.REFERRAL_STATUS.PENDING) {
                 pending.push(referrals[i]);
             }
-            if(referrals[i].status === enums.REFERRAL_STATUS.PROGRESS){
+            if (referrals[i].status === enums.REFERRAL_STATUS.PROGRESS) {
                 initiated.push(progress[i]);
             }
-            if(referrals[i].status === enums.REFERRAL_STATUS.REFERRED){
+            if (referrals[i].status === enums.REFERRAL_STATUS.REFERRED) {
                 referred.push(referrals[i]);
             }
         }
-        return res.json({ message: null, status: 'success', initiated,pending,progress,referred });
+        return res.json({ message: null, status: 'success', initiated, pending, progress, referred });
     } catch (err) {
         console.log(err.message);
         return res.json({ message: err.message, status: 'failure', payload: null });
@@ -414,9 +414,18 @@ app.get("/get/session", async (req, res) => {
     }
 })
 
+app.get('/', async (req, res) => {
+    try {
+        return res.status(200).send({ message: pool });
+    }
+    catch (error) {
+        return res.status(401).send({ message: 'error' });
+    }
+})
 
-app.listen(5000, () => {
-    console.log("Server has started on port 5000");
+
+app.listen(7001, () => {
+    console.log("Server has started on port 7001");
 });
 
 
