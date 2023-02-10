@@ -8,6 +8,9 @@ async function insertIntoUserSessions(userId,status) {
 }
 
 async function getLatestUserSession(userId) {
+    if (!userId) {
+        return null;
+    }
     const response = await pool.query("SELECT status from user_sessions where userid=$1 order by createdat desc limit 1",
         [userId]
     );

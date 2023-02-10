@@ -5,7 +5,6 @@ async function generateOtp() {
     return val;
 }
 
-
 async function sendOtpToPhoneNumber(phoneNumber){
  const response = await smsLib.sendSms(phoneNumber);
  return response && response.data ? response.data.OTP : null;

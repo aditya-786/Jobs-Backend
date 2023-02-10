@@ -74,14 +74,14 @@ app.post("/register/user", async (req, res) => {
         // check user already registered.
         const isUserPresent = await userLib.getUserByPhonNumber(phonenumber);
         if (isUserPresent) {
-            throw new Error('User already exists. Please login into our website');
+            return res.json({ message: 'Already registered. Please login :)', exists: true, payload: null, status: 'exists', userid: isUserPresent })
         }
         // check if city is present or not.
         let cityid = null;
         if (city != null) {
             cityid = await cityLib.getCityIdByName(city);
             if (!cityid) {
-                throw new Error('city not found');
+                return res.json({ message: 'City not found :( Something went wrong, please try again', exists: false, payload: null, status: 'city_not_found' })
             }
         }
         const user = await pool.query("INSERT INTO users(id,firstname,lastname,phonenumber,email,dob,gender,age,mothername,fathername,cityid,presentaddress,"
@@ -94,41 +94,78 @@ app.post("/register/user", async (req, res) => {
                 experience, currentemployeer, currentjobrole,
                 salarypermonth, languagecomfortable, resumelink]
         );
-        return res.json({ message: 'user registed with mitra successfully', status: 'success', payload: user.rows });
+        return res.json({ message: 'user registed with mitra successfully', status: 'success', payload: user.rows, exists: 'new' });
     } catch (err) {
         console.log(err.message);
-        return res.json({ message: err.message, status: 'failure', payload: null });
+        return res.json({ message: err.message, status: 'failure', payload: null, exists: false });
+    }
+})
+
+app.get('/isUserExists', async (req, res) => {
+    try {
+
+        const { userid } = req.query;
+
+        const user = userLib.getUserByUserId(userid);
+
+        if (user) {
+            return res.json({ message: 'User exists', status: 'success' });
+        }
+
+        return res.json({ message: 'User not exists', status: 'failure' });
+
+    }
+    catch (error) {
+        console.log(error.message);
+        res.json({ message: error, status: 'failure' })
     }
 })
 
 app.post("/send/opt", async (req, res) => {
     try {
-        const { phonenumber, userid } = req.body;
-        console.log(phonenumber, userid);
-        const otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
+        const { phonenumber } = req.body;
+        console.log(phonenumber);
+
+        const user = await userLib.getUserByPhonNumber(phonenumber);
+        if (!user) {
+            return res.json({ message: 'User is not registered', notExists: true, status: 'notExists', otpSent: false })
+        }
+        const userid = user;
+
+        const userSession = await userSessionsLib.getLatestUserSession(userid);
+        console.log(userSession)
+        if (userSession === enums.USER_SESSIONS.ACTIVE) {
+            return res.json({ message: 'You already login into our website', status: 'success', notExists: false, otpSent: false, userid: userid });
+        }
+
+        // const otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
+        const otp = 123456;
         const redis = await redisLib.redisClient();
         redis.set(enums.LATEST_SMS_OTP + '_' + userid, otp);
-        return res.json({ message: 'Otp sent successfully', status: 'success' });
+        return res.json({ message: 'Otp sent successfully', status: 'success', notExists: false, otpSent: true, userid: userid });
     } catch (err) {
         console.log(err.message);
-        return res.json({ message: err.message, status: 'failure' });
+        return res.json({ message: err.message, status: 'failure', notExists: false, otpSent: false });
     }
 })
 
 app.post("/login/user", async (req, res) => {
     try {
-        const { phonenumber, userid, otp } = req.body;
+        const { phonenumber, otp } = req.body;
         // already logined into our website, then why again and again
+
+        const user = await userLib.getUserByPhonNumber(phonenumber);
+        if (!user) {
+            throw new Error('User is not register!');
+        }
+        const userid = user;
+
         const userSession = await userSessionsLib.getLatestUserSession(userid);
         console.log(userSession)
         if (userSession === enums.USER_SESSIONS.ACTIVE) {
             return res.json({ message: 'You already login into our website', status: 'success' });
         }
 
-        const user = await userLib.getUserByPhonNumber(phonenumber);
-        if (!user) {
-            throw new Error('phonenumber not found');
-        }
         const redis = await redisLib.redisClient();
         const userOtp = await redis.get(enums.LATEST_SMS_OTP + '_' + userid);
         if (userOtp !== otp) {
@@ -136,7 +173,7 @@ app.post("/login/user", async (req, res) => {
         }
         // create entry into user_sessions.
         await userSessionsLib.insertIntoUserSessions(userid, enums.USER_SESSIONS.ACTIVE);
-        return res.json({ message: 'user login successfully', status: 'success' });
+        return res.json({ message: 'user login successfully', status: 'success', userid: userid });
     } catch (err) {
         console.log(err.message);
         return res.json({ message: err.message, status: 'failure' });

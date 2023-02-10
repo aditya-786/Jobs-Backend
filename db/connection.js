@@ -10,5 +10,13 @@ const pool = new Pool({
     ssl: process.env.DB_SSL
 });
 
+// const pool = new Pool({
+//     user: 'adi_7861',
+//     password: '',
+//     host: 'localhost',
+//     port: 5432,
+//     database: 'jobs_backendd',
+// })
+
 
 module.exports = pool;
