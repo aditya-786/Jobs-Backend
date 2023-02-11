@@ -138,8 +138,13 @@ app.post("/send/opt", async (req, res) => {
             return res.json({ message: 'You already login into our website', status: 'success', notExists: false, otpSent: false, userid: userid });
         }
 
-        // const otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
-        const otp = 123456;
+        let otp = 123456;
+
+        const testUsers = process.env.TEST_PHONE_NUMBERS.split(',');
+        if (!testUsers.includes(phonenumber)) {
+            // otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
+            otp = 456786;
+        }
         const redis = await redisLib.redisClient();
         redis.set(enums.LATEST_SMS_OTP + '_' + userid, otp);
         return res.json({ message: 'Otp sent successfully', status: 'success', notExists: false, otpSent: true, userid: userid });
@@ -197,9 +202,9 @@ app.post("/add/jobs", async (req, res) => {
 
         const companyId = await companyLib.getCompanyByName(company);
         if (!companyId) {
-            throw new Error('city not found');
+            throw new Error('company not found');
         }
-        const cityId = await cityLib.getCityIdByName(city)
+        let cityId = await cityLib.getCityIdByName(city)
         if (!cityId) {
             throw new Error('city not found');
         }
@@ -341,7 +346,11 @@ app.patch("/profile/update", async (req, res) => {
         if (city !== null) {
             cityid = await cityLib.getCityIdByName(city);
             if (!cityid) {
-                throw new Error('city not found');
+                const resp = await pool.query("INSERT INTO cities(id,name,pincode,statename,createdat,updatedat,deletedat"
+                    + ") VALUES(uuid_generate_v4(),$1,$2,$3,now(),now(),null) RETURNING *",
+                    [city, '560048', 'Karnataka']
+                );
+                cityid = await cityLib.getCityIdByName(city);
             }
         }
 
