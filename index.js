@@ -146,7 +146,7 @@ app.post("/send/opt", async (req, res) => {
         }
         const redis = await redisLib.redisClient();
         redis.set(enums.LATEST_SMS_OTP + '_' + userid, otp);
-        return res.json({ message: 'Otp sent successfully', status: 'success', notExists: false, otpSent: true, userid: userid });
+        return res.json({ message: testUsers.includes(phonenumber) ? `You are a test user. Use OTP: ${otp}`: 'Otp sent successfully', status: 'success', notExists: false, otpSent: true, userid: userid });
     } catch (err) {
         console.log(err.message);
         return res.json({ message: err.message, status: 'failure', notExists: false, otpSent: false });
