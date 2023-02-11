@@ -142,8 +142,7 @@ app.post("/send/opt", async (req, res) => {
 
         const testUsers = process.env.TEST_PHONE_NUMBERS.split(',');
         if (!testUsers.includes(phonenumber)) {
-            // otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
-            otp = 456786;
+            otp = await otpLib.sendOtpToPhoneNumber(phonenumber);
         }
         const redis = await redisLib.redisClient();
         redis.set(enums.LATEST_SMS_OTP + '_' + userid, otp);
