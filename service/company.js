@@ -12,11 +12,11 @@ async function getCompanyByName(name) {
     return null;
 }
 
-async function insertCompany(name) {
+async function insertCompany(name,logo) {
     console.log(process.env);
-    const company = await pool.query("INSERT INTO companies(id,name,createdat,updatedat,deletedat"
-        + ") VALUES(uuid_generate_v4(),$1,now(),now(),null) RETURNING *",
-        [name]
+    const company = await pool.query("INSERT INTO companies(id,name,logo,createdat,updatedat,deletedat"
+        + ") VALUES(uuid_generate_v4(),$1,$2,now(),now(),null) RETURNING *",
+        [name,logo]
     );
     return company;
 }

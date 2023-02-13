@@ -24,8 +24,8 @@ app.use(express.json());
 // ************************************************* companies *************************************************
 app.post("/add/company", async (req, res) => {
     try {
-        const { name } = req.body;
-        const company = await companyLib.insertCompany(name);
+        const { name, logo } = req.body;
+        const company = await companyLib.insertCompany(name, logo);
         return res.json(company.rows);
     } catch (err) {
         console.log(err.message);
@@ -226,11 +226,11 @@ app.post("/add/jobs", async (req, res) => {
 app.get("/get/notAppliedJobs", async (req, res) => {
     try {
         const userId = req.param('userid');
-        const userSession = await userSessionsLib.getLatestUserSession(userId);
-        console.log("Session-> ", userSession)
-        if (userSession !== enums.USER_SESSIONS.ACTIVE) {
-            throw new Error("please login to access new jobs");
-        }
+        // const userSession = await userSessionsLib.getLatestUserSession(userId);
+        // console.log("Session-> ", userSession)
+        // if (userSession !== enums.USER_SESSIONS.ACTIVE) {
+        //     throw new Error("please login to access new jobs");
+        // }
         const jobs = await jobLib.getJobs();
         let notAppliedJobs = [];
         for (let job = 0; job < jobs.length; job++) {

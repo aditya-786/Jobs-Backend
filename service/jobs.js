@@ -5,7 +5,7 @@ const enums = require("../service/enums");
 
 
 async function getJobs() {
-    const jobs = await pool.query("select j.*,c.name as companyname,cty.name as cityname from jobs j join companies c on j.companyid=c.id join cities cty on j.cityid=cty.id;");
+    const jobs = await pool.query("select j.*,c.name as companyname, c.logo as logo, cty.name as cityname from jobs j join companies c on j.companyid=c.id join cities cty on j.cityid=cty.id;");
     return jobs.rows;
 }
 
